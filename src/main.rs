@@ -1,15 +1,14 @@
 use std::env;
-use std::net::IpAddr;
-use std::net::TcpStream;
 use std::process;
+
+mod lib;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if let Ok(ip) = args[1].clone().parse::<IpAddr>() {
+    
+    if let Ok(target) = lib::handle_args(args) {
         for port in 1..65536 {
-            if let Ok(_stream) = TcpStream::connect(format!("{}:{}", ip, port)) {
-                println!("Port {} opened", port);
-            }
+            lib::scan_port(target.ip, port);
         }
     } else {
         println!("IP Address is not valid");
