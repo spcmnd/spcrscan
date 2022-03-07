@@ -21,11 +21,12 @@ pub struct Args {
 }
 
 fn main() {
-    let args = Args::parse();
-    let target = args.target;
-    let quick = args.quick;
-    let condensed = args.condensed;
-    let output = args.output;
+    let Args {
+        target,
+        quick,
+        condensed,
+        output,
+    } = Args::parse();
 
     let port_max = if quick { 10000 } else { 65536 };
     let mut opened_ports: Vec<String> = Vec::new();
@@ -36,28 +37,23 @@ fn main() {
         match result {
             Some(r) => {
                 opened_ports.push(r.to_string());
-
-                if !condensed {
-                    logger::log(
-                        format!("Port {} is opened", r),
-                        match &output {
-                            None => "",
-                            Some(x) => x,
-                        },
-                    );
-                }
             }
             None => (),
         }
     }
 
-    if condensed {
-        logger::log(
-            format!("{}", opened_ports.join(",")),
-            match &output {
-                None => "",
-                Some(x) => x,
-            },
-        );
-    }
+    logger::log(
+        match condensed {
+            true => format!("{}", opened_ports.join(",")),
+            false => opened_ports
+                .into_iter()
+                .map(|o| format!("Port {} is opened", o))
+                .collect::<Vec<String>>()
+                .join("\n"),
+        },
+        match &output {
+            None => "",
+            Some(x) => x,
+        },
+    );
 }
